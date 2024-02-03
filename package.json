@@ -3,13 +3,18 @@
   "version": "1.0.0",
   "description": "finding recipe for yourself according to your goal",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "node ./src/index.js"
+    "dev": "nodemon ./src/index.js"
   },
   "keywords": [
     "recipe"
   ],
   "author": "Sameer Srivastava",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "nodemon": "^3.0.3",
+    "prettier": "^3.2.4"
+  }
 }
