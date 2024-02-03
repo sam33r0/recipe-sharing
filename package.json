@@ -1,0 +1,15 @@
+{
+  "name": "recipe-sharing",
+  "version": "1.0.0",
+  "description": "finding recipe for yourself according to your goal",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "node ./src/index.js"
+  },
+  "keywords": [
+    "recipe"
+  ],
+  "author": "Sameer Srivastava",
+  "license": "ISC"
+}
