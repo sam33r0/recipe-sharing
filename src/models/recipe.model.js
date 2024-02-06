@@ -1,6 +1,10 @@
 import mongoose,{Schema} from "mongoose";
 
 const recipeSchema= new Schema({
+    name:{
+        type: String,
+        required: true
+    },
     ingredient:[{
         type: String
     }],
@@ -27,8 +31,7 @@ const recipeSchema= new Schema({
         type: String,
         enum: ["VEG","NONVEG","EGG"],
         default: "VEG"
-    },
-
+    }
 },{timestamps: true})
 
 export const Recipe= mongoose.model("Recipe",recipeSchema);
