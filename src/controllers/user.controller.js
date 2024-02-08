@@ -6,8 +6,8 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 
-const register= asyncHandler(async(req,res)=>{
-// get user details from frontend,
+const register = asyncHandler(async (req, res) => {
+    // get user details from frontend,
     // validation- notE
     // check if already exist
     // check compulsory
@@ -18,42 +18,42 @@ const register= asyncHandler(async(req,res)=>{
     // return res
 
     const avatarLocalPath = req.file?.path;
-    const { username, email, fullName, dob, password}= req.body;
+    const { username, email, fullName, dob, password } = req.body;
     if (
         [fullName, email, username, password].some((field) => field?.trim() === "")
     ) {
         throw new ApiError(400, "incomplete data");
     }
-    const lowerCaseUserName= username.toLowerCase();
+    const lowerCaseUserName = username.toLowerCase();
     const existedUser = await User.findOne({
         $or: [{ lowerCaseUserName }, { email }]
     })
 
     if (existedUser)
         throw new ApiError(409, "User already exist");
-    
-    if(!avatarLocalPath)
-    throw new ApiError(409, "no dp to upload");
-    
-    const avatar=await uploadOnCloudinary(avatarLocalPath);
+
+    if (!avatarLocalPath)
+        throw new ApiError(409, "no dp to upload");
+
+    const avatar = await uploadOnCloudinary(avatarLocalPath);
     if (!avatar)
         throw new ApiError(400, "Avatar file is required");
     console.log("done till avatar file upload");
-    const user= await User.create({
+    const user = await User.create({
         username: username.toLowerCase(),
         email,
         fullName,
         avatar: avatar.url,
         dob,
-        password        
+        password
     })
 
     const createdUser = await User.findById(user._id).select(
         "-password -refreshToken"
     )
 
-    if (!createdUser) { 
-        throw new ApiError(500, "Something went wrong while registering the user"); 
+    if (!createdUser) {
+        throw new ApiError(500, "Something went wrong while registering the user");
     }
 
     return res.status(201).json(
@@ -62,5 +62,82 @@ const register= asyncHandler(async(req,res)=>{
 
 })
 
+const generateToken = async (user) => {
+    try{
+        const accessToken = user.generateAccessToken();
+        const refreshToken = user.generateRefreshToken()
 
-export {register};
+        user.refreshToken = refreshToken
+        await user.save({ validateBeforeSave: false })
+        return { accessToken, refreshToken }
+    }
+    catch (error) {
+        throw new ApiError(500, "Something went wrong while generating access and refresh token");
+    }
+}
+
+
+const loginUser = asyncHandler(async (req, res) => {
+    //req body-> data
+    // username or email -> login
+    // find user
+    // password check
+    // access and refresh token
+    // send cookies token and send response
+    const { email, username, password } = req.body;
+
+    if (!username && !email) {
+        throw new ApiError(400, "username or email is required");
+    }
+    console.log(username, password);
+    const user = await User.findOne({
+        $or: [{ email }, { username }]
+    }).select("-password -refreshToken");
+    if (!user) {
+        throw new ApiError(404, "user does not exist please register");
+    }
+    try{
+    const isPasswordValid = await user.isPasswordCorrect(password);
+    
+    if (!isPasswordValid) {
+        throw new ApiError(401, "Invalid Password");
+    }
+    }
+    catch{
+        console.log("problem in password checking");
+    }
+    const {refreshToken, accessToken}= await generateToken(user);
+    const options={
+        httpOnly: true,
+        secure: true
+    }
+    return res.status(200).cookie("accessToken", accessToken, options).cookie("refreshToken", refreshToken, options).json(
+        new ApiResponse(200,
+            {
+                'user': user, accessToken, refreshToken,
+            },
+            "User logged In Successfully"
+        ))
+})
+
+
+const logoutUser= asyncHandler(async (req,res)=>{
+    await User.findByIdAndUpdate(
+        req.user._id,
+        {
+            $unset: {
+                refreshToken: 1
+            }
+        },
+        {
+            new: true
+        }
+    )
+    const options = {
+        httpOnly: true,
+        secure: true,
+    }
+    return res.status(200).clearCookie("accessToken", options).clearCookie("refreshToken", options).json(new ApiResponse(200, {}, "user logged out successfully"));
+})
+
+export { register, loginUser ,logoutUser};
