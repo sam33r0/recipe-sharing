@@ -24,8 +24,9 @@ const register= asyncHandler(async(req,res)=>{
     ) {
         throw new ApiError(400, "incomplete data");
     }
+    const lowerCaseUserName= username.toLowerCase();
     const existedUser = await User.findOne({
-        $or: [{ username }, { email }]
+        $or: [{ lowerCaseUserName }, { email }]
     })
 
     if (existedUser)
@@ -37,12 +38,12 @@ const register= asyncHandler(async(req,res)=>{
     const avatar=await uploadOnCloudinary(avatarLocalPath);
     if (!avatar)
         throw new ApiError(400, "Avatar file is required");
-
+    console.log("done till avatar file upload");
     const user= await User.create({
-        username,
+        username: username.toLowerCase(),
         email,
         fullName,
-        avatar,
+        avatar: avatar.url,
         dob,
         password        
     })

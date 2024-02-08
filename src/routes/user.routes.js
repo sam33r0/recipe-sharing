@@ -7,5 +7,5 @@ router.route('/').get((req,res)=>{
     res.send("<h1>hello</h1>");
 })
 
-router.route('/register').post(upload.single("avatar") ,register)
+router.route('/register').post(upload.single("avatarLocalPath") ,register)
 export default router;
