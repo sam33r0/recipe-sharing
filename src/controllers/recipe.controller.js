@@ -53,13 +53,144 @@ const allVissibleRecipe = asyncHandler(async (_, res) => {
                 category: 1
             }
         }])
-    if(recipes?.length==0)
-    {
-        return res.status(200).json(new ApiResponse(200, {},"no recipes found please start uploading"));
+    if (recipes?.length == 0) {
+        return res.status(200).json(new ApiResponse(200, {}, "no recipes found please start uploading"));
     }
     return res.status(200).json(new ApiResponse(200, { recipes }, "done"));
 })
-export { 
-    addRecipe, 
-    allVissibleRecipe 
+
+const allVegRecipe = asyncHandler(async (req, res) => {
+    const recipes = await Recipe.aggregate([
+        {
+            $match: {
+                category: "VEG",
+                visibility: true
+            }
+        },
+        {
+            $project: {
+                _id: 1,
+                name: 1,
+                author: 1,
+                image: 1,
+                category: 1
+            }
+        }])
+    if (recipes?.length == 0) {
+        return res.status(200).json(new ApiResponse(200, {}, "no recipes found please start uploading"));
+    }
+    return res.status(200).json(new ApiResponse(200, { recipes }, "done"));
+})
+
+const allNonVegRecipe = asyncHandler(async (req, res) => {
+    const recipes = await Recipe.aggregate([
+        {
+            $match: {
+                category: "NONVEG",
+                visibility: true
+            }
+        },
+        {
+            $project: {
+                _id: 1,
+                name: 1,
+                author: 1,
+                image: 1,
+                category: 1
+            }
+        }])
+    if (recipes?.length == 0) {
+        return res.status(200).json(new ApiResponse(200, {}, "no recipes found please start uploading"));
+    }
+    return res.status(200).json(new ApiResponse(200, { recipes }, "done"));
+})
+
+const allEggRecipe = asyncHandler(async (req, res) => {
+    const recipes = await Recipe.aggregate([
+        {
+            $match: {
+                category: "EGG",
+                visibility: true
+            }
+        },
+        {
+            $project: {
+                _id: 1,
+                name: 1,
+                author: 1,
+                image: 1,
+                category: 1
+            }
+        }])
+    if (recipes?.length == 0) {
+        return res.status(200).json(new ApiResponse(200, {}, "no recipes found please start uploading"));
+    }
+    return res.status(200).json(new ApiResponse(200, { recipes }, "done"));
+})
+
+const eggAndNonVegRecipe = asyncHandler(async (req, res) => {
+    const recipes = await Recipe.aggregate([
+        {
+            $match: {
+                $or: [
+                    {
+                        category: "EGG"
+                    },
+                    { 
+                        category: "NONVEG" 
+                    }],
+                visibility: true
+            }
+        },
+        {
+            $project: {
+                _id: 1,
+                name: 1,
+                author: 1,
+                image: 1,
+                category: 1
+            }
+        }])
+    if (recipes?.length == 0) {
+        return res.status(200).json(new ApiResponse(200, {}, "no recipes found please start uploading"));
+    }
+    return res.status(200).json(new ApiResponse(200, { recipes }, "done"));
+})
+
+const eggAndVegRecipe = asyncHandler(async (req, res) => {
+    const recipes = await Recipe.aggregate([
+        {
+            $match: {
+                $or: [
+                    {
+                        category: "EGG"
+                    },
+                    { 
+                        category: "VEG" 
+                    }],
+                visibility: true
+            }
+        },
+        {
+            $project: {
+                _id: 1,
+                name: 1,
+                author: 1,
+                image: 1,
+                category: 1
+            }
+        }])
+    if (recipes?.length == 0) {
+        return res.status(200).json(new ApiResponse(200, {}, "no recipes found please start uploading"));
+    }
+    return res.status(200).json(new ApiResponse(200, { recipes }, "done"));
+})
+export {
+    addRecipe,
+    allVissibleRecipe,
+    allVegRecipe,
+    allNonVegRecipe,
+    allEggRecipe,
+    eggAndNonVegRecipe,
+    eggAndVegRecipe
 }
