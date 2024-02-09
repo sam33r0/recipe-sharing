@@ -1,6 +1,10 @@
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+
+import userRoutes from "../src/routes/user.routes.js"
+import  recipeRoutes  from "./routes/recipe.routes.js";
+
 const app= express();
 
 app.use(cors({
@@ -13,8 +17,6 @@ app.use(express.urlencoded({ extended: true, limit: "32kb" }))
 app.use(express.static("public"))
 app.use(cookieParser());
 
-import userRoutes from "../src/routes/user.routes.js"
-
 app.use("/reciapi/v1/users",userRoutes);
-
+app.use("/reciapi/v1/recipe", recipeRoutes)
 export { app };
