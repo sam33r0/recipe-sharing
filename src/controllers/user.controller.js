@@ -38,14 +38,13 @@ const register = asyncHandler(async (req, res) => {
     const avatar = await uploadOnCloudinary(avatarLocalPath);
     if (!avatar)
         throw new ApiError(400, "Avatar file is required");
-    console.log("done till avatar file upload");
     const user = await User.create({
         username: username.toLowerCase(),
         email,
         fullName,
         avatar: avatar.url,
         dob,
-        password
+        password,
     })
 
     const createdUser = await User.findById(user._id).select(
@@ -64,8 +63,8 @@ const register = asyncHandler(async (req, res) => {
 
 const generateToken = async (user) => {
     try{
-        const accessToken = user.generateAccessToken();
-        const refreshToken = user.generateRefreshToken()
+        const accessToken = await user.generateAccessToken();
+        const refreshToken = await user.generateRefreshToken()
 
         user.refreshToken = refreshToken
         await user.save({ validateBeforeSave: false })
@@ -75,7 +74,6 @@ const generateToken = async (user) => {
         throw new ApiError(500, "Something went wrong while generating access and refresh token");
     }
 }
-
 
 const loginUser = asyncHandler(async (req, res) => {
     //req body-> data
@@ -89,22 +87,18 @@ const loginUser = asyncHandler(async (req, res) => {
     if (!username && !email) {
         throw new ApiError(400, "username or email is required");
     }
-    console.log(username, password);
+    
     const user = await User.findOne({
         $or: [{ email }, { username }]
-    }).select("-password -refreshToken");
+    }).select(" -refreshToken");
+
     if (!user) {
         throw new ApiError(404, "user does not exist please register");
     }
-    try{
+
     const isPasswordValid = await user.isPasswordCorrect(password);
-    
     if (!isPasswordValid) {
         throw new ApiError(401, "Invalid Password");
-    }
-    }
-    catch{
-        console.log("problem in password checking");
     }
     const {refreshToken, accessToken}= await generateToken(user);
     const options={
@@ -119,7 +113,6 @@ const loginUser = asyncHandler(async (req, res) => {
             "User logged In Successfully"
         ))
 })
-
 
 const logoutUser= asyncHandler(async (req,res)=>{
     await User.findByIdAndUpdate(
