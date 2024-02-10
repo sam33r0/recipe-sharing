@@ -3,7 +3,7 @@ import { asyncHandler } from "../utils/asyncHandler.js"
 import { Recipe } from "../models/recipe.model.js"
 import mongoose from "mongoose";
 import { ApiResponse } from "../utils/ApiResponse.js";
-import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import { deleteFromCloudinary, uploadOnCloudinary } from "../utils/cloudinary.js";
 
 const addRecipe = asyncHandler(async (req, res) => {
     const { name, ingredient, content, cookingTime, vissibility, category } = req?.body;
@@ -59,7 +59,7 @@ const allVissibleRecipe = asyncHandler(async (_, res) => {
     return res.status(200).json(new ApiResponse(200, { recipes }, "done"));
 })
 
-const allVegRecipe = asyncHandler(async (req, res) => {
+const allVegRecipe = asyncHandler(async (_, res) => {
     const recipes = await Recipe.aggregate([
         {
             $match: {
@@ -82,7 +82,7 @@ const allVegRecipe = asyncHandler(async (req, res) => {
     return res.status(200).json(new ApiResponse(200, { recipes }, "done"));
 })
 
-const allNonVegRecipe = asyncHandler(async (req, res) => {
+const allNonVegRecipe = asyncHandler(async (_, res) => {
     const recipes = await Recipe.aggregate([
         {
             $match: {
@@ -105,7 +105,7 @@ const allNonVegRecipe = asyncHandler(async (req, res) => {
     return res.status(200).json(new ApiResponse(200, { recipes }, "done"));
 })
 
-const allEggRecipe = asyncHandler(async (req, res) => {
+const allEggRecipe = asyncHandler(async (_, res) => {
     const recipes = await Recipe.aggregate([
         {
             $match: {
@@ -128,7 +128,7 @@ const allEggRecipe = asyncHandler(async (req, res) => {
     return res.status(200).json(new ApiResponse(200, { recipes }, "done"));
 })
 
-const eggAndNonVegRecipe = asyncHandler(async (req, res) => {
+const eggAndNonVegRecipe = asyncHandler(async (_, res) => {
     const recipes = await Recipe.aggregate([
         {
             $match: {
@@ -157,7 +157,7 @@ const eggAndNonVegRecipe = asyncHandler(async (req, res) => {
     return res.status(200).json(new ApiResponse(200, { recipes }, "done"));
 })
 
-const eggAndVegRecipe = asyncHandler(async (req, res) => {
+const eggAndVegRecipe = asyncHandler(async (_, res) => {
     const recipes = await Recipe.aggregate([
         {
             $match: {
@@ -206,6 +206,21 @@ const getMyRecipe = asyncHandler(async (req,res)=>{
     return res.status(200).json(new ApiResponse(200, recipe, 'These are your recipes'));
 })
 
+const deleteRecipe= asyncHandler(async (req,res)=>{
+    const recId= req.body;
+    if(!recId)
+    {
+        throw new ApiError(400, 'no recipe id found');
+    }
+    const recipe= await Recipe.findByIdAndDelete(recId);
+    if(!recipe)
+    {
+        throw new ApiError(400, 'unable to delete');
+    }
+    await deleteFromCloudinary(recipe.image);
+    return res.status(200).json(new ApiResponse(200, recipe, 'deleted'));
+})
+
 export {
     addRecipe,
     allVissibleRecipe,
@@ -214,5 +229,6 @@ export {
     allEggRecipe,
     eggAndNonVegRecipe,
     eggAndVegRecipe,
-    getMyRecipe
+    getMyRecipe,
+    deleteRecipe
 }
