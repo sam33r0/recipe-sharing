@@ -215,7 +215,7 @@ const deleteRecipe= asyncHandler(async (req,res)=>{
     const recipe= await Recipe.findByIdAndDelete(recId);
     if(!recipe)
     {
-        throw new ApiError(400, 'unable to delete');
+        throw new ApiError(500, 'unable to delete');
     }
     await deleteFromCloudinary(recipe.image);
     return res.status(200).json(new ApiResponse(200, recipe, 'deleted'));
