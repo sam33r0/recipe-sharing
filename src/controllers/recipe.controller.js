@@ -185,6 +185,27 @@ const eggAndVegRecipe = asyncHandler(async (req, res) => {
     }
     return res.status(200).json(new ApiResponse(200, { recipes }, "done"));
 })
+
+const getMyRecipe = asyncHandler(async (req,res)=>{
+    const id= req?.user?._id;
+    if(!id)
+    throw new ApiError(400,'no refresh token');
+    const recipe= await Recipe.aggregate([{
+        $match: {
+            author: new mongoose.Types.ObjectId(id)
+        }
+    },{
+        $project: {
+            _id: 1,
+            name: 1,
+            author: 1,
+            image: 1,
+            category: 1
+        }
+    }])
+    return res.status(200).json(new ApiResponse(200, recipe, 'These are your recipes'));
+})
+
 export {
     addRecipe,
     allVissibleRecipe,
@@ -192,5 +213,6 @@ export {
     allNonVegRecipe,
     allEggRecipe,
     eggAndNonVegRecipe,
-    eggAndVegRecipe
+    eggAndVegRecipe,
+    getMyRecipe
 }
