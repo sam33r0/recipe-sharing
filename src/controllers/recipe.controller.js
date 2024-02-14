@@ -4,6 +4,7 @@ import { Recipe } from "../models/recipe.model.js"
 import mongoose from "mongoose";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { deleteFromCloudinary, uploadOnCloudinary } from "../utils/cloudinary.js";
+import { User } from "../models/user.model.js";
 
 const addRecipe = asyncHandler(async (req, res) => {
     const { name, ingredient, content, cookingTime, vissibility, category } = req?.body;
@@ -136,8 +137,8 @@ const eggAndNonVegRecipe = asyncHandler(async (_, res) => {
                     {
                         category: "EGG"
                     },
-                    { 
-                        category: "NONVEG" 
+                    {
+                        category: "NONVEG"
                     }],
                 visibility: true
             }
@@ -165,8 +166,8 @@ const eggAndVegRecipe = asyncHandler(async (_, res) => {
                     {
                         category: "EGG"
                     },
-                    { 
-                        category: "VEG" 
+                    {
+                        category: "VEG"
                     }],
                 visibility: true
             }
@@ -186,15 +187,15 @@ const eggAndVegRecipe = asyncHandler(async (_, res) => {
     return res.status(200).json(new ApiResponse(200, { recipes }, "done"));
 })
 
-const getMyRecipe = asyncHandler(async (req,res)=>{
-    const id= req?.user?._id;
-    if(!id)
-    throw new ApiError(400,'no refresh token');
-    const recipe= await Recipe.aggregate([{
+const getMyRecipe = asyncHandler(async (req, res) => {
+    const id = req?.user?._id;
+    if (!id)
+        throw new ApiError(400, 'no refresh token');
+    const recipe = await Recipe.aggregate([{
         $match: {
             author: new mongoose.Types.ObjectId(id)
         }
-    },{
+    }, {
         $project: {
             _id: 1,
             name: 1,
@@ -206,19 +207,37 @@ const getMyRecipe = asyncHandler(async (req,res)=>{
     return res.status(200).json(new ApiResponse(200, recipe, 'These are your recipes'));
 })
 
-const deleteRecipe= asyncHandler(async (req,res)=>{
-    const recId= req.body;
-    if(!recId)
-    {
+const deleteRecipe = asyncHandler(async (req, res) => {
+    const recId = req.body;
+    if (!recId) {
         throw new ApiError(400, 'no recipe id found');
     }
-    const recipe= await Recipe.findByIdAndDelete(recId);
-    if(!recipe)
-    {
+    const recipe = await Recipe.findByIdAndDelete(recId);
+    if (!recipe) {
         throw new ApiError(500, 'unable to delete');
     }
     await deleteFromCloudinary(recipe.image);
     return res.status(200).json(new ApiResponse(200, recipe, 'deleted'));
+})
+
+const getRecipe = asyncHandler(async (req, res) => {
+    const recId = req.body;
+    if (!recId) {
+        throw new ApiError(404, "no recipe found");
+    }
+    const recipe = await findById(recId);
+    if (!recipe) {
+        throw new ApiError(404, "no recipe found");
+    }
+    const user = await User.findOne({ _id: new mongoose.Types.ObjectId(recipe.author) }, { avatar: 1, username: 1, name: 1 });
+    if (!user) {
+        return res.status(300).json(new ApiResponse(300, {
+            recipe
+        }, "Recipe Found but No User found"));
+    }
+    return res.status(200).json(new ApiResponse(200, {
+        recipe, user
+    }, "Recipe and Author Found"));
 })
 
 export {
@@ -230,5 +249,6 @@ export {
     eggAndNonVegRecipe,
     eggAndVegRecipe,
     getMyRecipe,
-    deleteRecipe
+    deleteRecipe,
+    getRecipe
 }
