@@ -229,7 +229,7 @@ const getRecipe = asyncHandler(async (req, res) => {
     if (!recipe) {
         throw new ApiError(404, "no recipe found");
     }
-    const user = await User.findOne({ _id: new mongoose.Types.ObjectId(recipe.author) }, { avatar: 1, username: 1, name: 1 });
+    const user = await User.findOne({ _id: new mongoose.Types.ObjectId(recipe.author) }, { avatar: 1, username: 1, fullName: 1 });
     if (!user) {
         return res.status(300).json(new ApiResponse(300, {
             recipe
