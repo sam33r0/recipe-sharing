@@ -44,6 +44,26 @@ const allVissibleRecipe = asyncHandler(async (_, res) => {
             $match: {
                 visibility: true
             }
+        },{
+            $lookup: {
+                from:"users",
+                localField: "author",
+                foreignField: "_id",
+                as: "authorName",
+                pipeline: [{
+                    $project:{
+                        fullName: 1,
+                        avatar: 1,
+                    }
+                }]
+
+            }
+        },{
+            $addFields:{
+                owner:{
+                    $first: "$authorName"
+                }
+            }
         },
         {
             $project: {
@@ -51,7 +71,8 @@ const allVissibleRecipe = asyncHandler(async (_, res) => {
                 name: 1,
                 author: 1,
                 image: 1,
-                category: 1
+                category: 1,
+                owner: 1
             }
         }])
     if (recipes?.length == 0) {
@@ -67,6 +88,26 @@ const allVegRecipe = asyncHandler(async (_, res) => {
                 category: "VEG",
                 visibility: true
             }
+        },{
+            $lookup: {
+                from:"users",
+                localField: "author",
+                foreignField: "_id",
+                as: "authorName",
+                pipeline: [{
+                    $project:{
+                        fullName: 1,
+                        avatar: 1,
+                    }
+                }]
+
+            }
+        },{
+            $addFields:{
+                owner:{
+                    $first: "$authorName"
+                }
+            }
         },
         {
             $project: {
@@ -74,7 +115,8 @@ const allVegRecipe = asyncHandler(async (_, res) => {
                 name: 1,
                 author: 1,
                 image: 1,
-                category: 1
+                category: 1,
+                owner: 1
             }
         }])
     if (recipes?.length == 0) {
@@ -90,6 +132,26 @@ const allNonVegRecipe = asyncHandler(async (_, res) => {
                 category: "NONVEG",
                 visibility: true
             }
+        },{
+            $lookup: {
+                from:"users",
+                localField: "author",
+                foreignField: "_id",
+                as: "authorName",
+                pipeline: [{
+                    $project:{
+                        fullName: 1,
+                        avatar: 1,
+                    }
+                }]
+
+            }
+        },{
+            $addFields:{
+                owner:{
+                    $first: "$authorName"
+                }
+            }
         },
         {
             $project: {
@@ -97,7 +159,8 @@ const allNonVegRecipe = asyncHandler(async (_, res) => {
                 name: 1,
                 author: 1,
                 image: 1,
-                category: 1
+                category: 1,
+                owner: 1
             }
         }])
     if (recipes?.length == 0) {
@@ -113,6 +176,26 @@ const allEggRecipe = asyncHandler(async (_, res) => {
                 category: "EGG",
                 visibility: true
             }
+        },{
+            $lookup: {
+                from:"users",
+                localField: "author",
+                foreignField: "_id",
+                as: "authorName",
+                pipeline: [{
+                    $project:{
+                        fullName: 1,
+                        avatar: 1,
+                    }
+                }]
+
+            }
+        },{
+            $addFields:{
+                owner:{
+                    $first: "$authorName"
+                }
+            }
         },
         {
             $project: {
@@ -120,7 +203,8 @@ const allEggRecipe = asyncHandler(async (_, res) => {
                 name: 1,
                 author: 1,
                 image: 1,
-                category: 1
+                category: 1,
+                owner: 1
             }
         }])
     if (recipes?.length == 0) {
@@ -144,12 +228,34 @@ const eggAndNonVegRecipe = asyncHandler(async (_, res) => {
             }
         },
         {
+            $lookup: {
+                from:"users",
+                localField: "author",
+                foreignField: "_id",
+                as: "authorName",
+                pipeline: [{
+                    $project:{
+                        fullName: 1,
+                        avatar: 1,
+                    }
+                }]
+
+            }
+        },{
+            $addFields:{
+                owner:{
+                    $first: "$authorName"
+                }
+            }
+        },
+        {
             $project: {
                 _id: 1,
                 name: 1,
                 author: 1,
                 image: 1,
-                category: 1
+                category: 1,
+                owner: 1
             }
         }])
     if (recipes?.length == 0) {
@@ -171,6 +277,26 @@ const eggAndVegRecipe = asyncHandler(async (_, res) => {
                     }],
                 visibility: true
             }
+        },{
+            $lookup: {
+                from:"users",
+                localField: "author",
+                foreignField: "_id",
+                as: "authorName",
+                pipeline: [{
+                    $project:{
+                        fullName: 1,
+                        avatar: 1,
+                    }
+                }]
+
+            }
+        },{
+            $addFields:{
+                owner:{
+                    $first: "$authorName"
+                }
+            }
         },
         {
             $project: {
@@ -178,7 +304,8 @@ const eggAndVegRecipe = asyncHandler(async (_, res) => {
                 name: 1,
                 author: 1,
                 image: 1,
-                category: 1
+                category: 1,
+                owner: 1
             }
         }])
     if (recipes?.length == 0) {
