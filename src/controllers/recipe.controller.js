@@ -7,7 +7,7 @@ import { deleteFromCloudinary, uploadOnCloudinary } from "../utils/cloudinary.js
 import { User } from "../models/user.model.js";
 
 const addRecipe = asyncHandler(async (req, res) => {
-    const { name, ingredient, content, cookingTime, vissibility, category } = req?.body;
+    const { name, ingredient, content, cookingTime, visibility, category } = req?.body;
     const author = new mongoose.Types.ObjectId(req.user?._id);
     if (
         [name, content].some((field) => field?.trim() === "")
@@ -28,7 +28,7 @@ const addRecipe = asyncHandler(async (req, res) => {
         content,
         cookingTime,
         author,
-        vissibility,
+        visibility,
         image: image.url,
         category,
     })
@@ -38,29 +38,39 @@ const addRecipe = asyncHandler(async (req, res) => {
     return res.status(200).json(new ApiResponse(200, recipe, "checking"));
 })
 
+const updateVissibility = asyncHandler(async (req, res) => {
+    const id = req.body.id;
+    const visibility= req.body.visibility;
+    const recipe = await Recipe.findByIdAndUpdate(id,{
+        $set: {
+            visibility
+    }},{new: true})
+    return res.status(200).json(new ApiResponse(200, {}, "done"));
+})
+
 const allVissibleRecipe = asyncHandler(async (_, res) => {
     const recipes = await Recipe.aggregate([
         {
             $match: {
                 visibility: true
             }
-        },{
+        }, {
             $lookup: {
-                from:"users",
+                from: "users",
                 localField: "author",
                 foreignField: "_id",
                 as: "authorName",
                 pipeline: [{
-                    $project:{
+                    $project: {
                         fullName: 1,
                         avatar: 1,
                     }
                 }]
 
             }
-        },{
-            $addFields:{
-                owner:{
+        }, {
+            $addFields: {
+                owner: {
                     $first: "$authorName"
                 }
             }
@@ -88,23 +98,23 @@ const allVegRecipe = asyncHandler(async (_, res) => {
                 category: "VEG",
                 visibility: true
             }
-        },{
+        }, {
             $lookup: {
-                from:"users",
+                from: "users",
                 localField: "author",
                 foreignField: "_id",
                 as: "authorName",
                 pipeline: [{
-                    $project:{
+                    $project: {
                         fullName: 1,
                         avatar: 1,
                     }
                 }]
 
             }
-        },{
-            $addFields:{
-                owner:{
+        }, {
+            $addFields: {
+                owner: {
                     $first: "$authorName"
                 }
             }
@@ -132,23 +142,23 @@ const allNonVegRecipe = asyncHandler(async (_, res) => {
                 category: "NONVEG",
                 visibility: true
             }
-        },{
+        }, {
             $lookup: {
-                from:"users",
+                from: "users",
                 localField: "author",
                 foreignField: "_id",
                 as: "authorName",
                 pipeline: [{
-                    $project:{
+                    $project: {
                         fullName: 1,
                         avatar: 1,
                     }
                 }]
 
             }
-        },{
-            $addFields:{
-                owner:{
+        }, {
+            $addFields: {
+                owner: {
                     $first: "$authorName"
                 }
             }
@@ -176,23 +186,23 @@ const allEggRecipe = asyncHandler(async (_, res) => {
                 category: "EGG",
                 visibility: true
             }
-        },{
+        }, {
             $lookup: {
-                from:"users",
+                from: "users",
                 localField: "author",
                 foreignField: "_id",
                 as: "authorName",
                 pipeline: [{
-                    $project:{
+                    $project: {
                         fullName: 1,
                         avatar: 1,
                     }
                 }]
 
             }
-        },{
-            $addFields:{
-                owner:{
+        }, {
+            $addFields: {
+                owner: {
                     $first: "$authorName"
                 }
             }
@@ -229,21 +239,72 @@ const eggAndNonVegRecipe = asyncHandler(async (_, res) => {
         },
         {
             $lookup: {
-                from:"users",
+                from: "users",
                 localField: "author",
                 foreignField: "_id",
                 as: "authorName",
                 pipeline: [{
-                    $project:{
+                    $project: {
                         fullName: 1,
                         avatar: 1,
                     }
                 }]
 
             }
-        },{
-            $addFields:{
-                owner:{
+        }, {
+            $addFields: {
+                owner: {
+                    $first: "$authorName"
+                }
+            }
+        },
+        {
+            $project: {
+                _id: 1,
+                name: 1,
+                author: 1,
+                image: 1,
+                category: 1,
+                owner: 1
+            }
+        }])
+    if (recipes?.length == 0) {
+        return res.status(200).json(new ApiResponse(200, {}, "no recipes found please start uploading"));
+    }
+    return res.status(200).json(new ApiResponse(200, { recipes }, "done"));
+})
+
+const vegAndNonVegRecipe = asyncHandler(async (_, res) => {
+    const recipes = await Recipe.aggregate([
+        {
+            $match: {
+                $or: [
+                    {
+                        category: "VEG"
+                    },
+                    {
+                        category: "NONVEG"
+                    }],
+                visibility: true
+            }
+        },
+        {
+            $lookup: {
+                from: "users",
+                localField: "author",
+                foreignField: "_id",
+                as: "authorName",
+                pipeline: [{
+                    $project: {
+                        fullName: 1,
+                        avatar: 1,
+                    }
+                }]
+
+            }
+        }, {
+            $addFields: {
+                owner: {
                     $first: "$authorName"
                 }
             }
@@ -277,23 +338,23 @@ const eggAndVegRecipe = asyncHandler(async (_, res) => {
                     }],
                 visibility: true
             }
-        },{
+        }, {
             $lookup: {
-                from:"users",
+                from: "users",
                 localField: "author",
                 foreignField: "_id",
                 as: "authorName",
                 pipeline: [{
-                    $project:{
+                    $project: {
                         fullName: 1,
                         avatar: 1,
                     }
                 }]
 
             }
-        },{
-            $addFields:{
-                owner:{
+        }, {
+            $addFields: {
+                owner: {
                     $first: "$authorName"
                 }
             }
@@ -315,7 +376,7 @@ const eggAndVegRecipe = asyncHandler(async (_, res) => {
 })
 
 const getMyRecipe = asyncHandler(async (req, res) => {
-    const id = req?.user?._id;
+    const id = req?.user._id;
     if (!id)
         throw new ApiError(400, 'no refresh token');
     const recipe = await Recipe.aggregate([{
@@ -328,14 +389,15 @@ const getMyRecipe = asyncHandler(async (req, res) => {
             name: 1,
             author: 1,
             image: 1,
-            category: 1
+            category: 1,
+            visibility: 1
         }
     }])
     return res.status(200).json(new ApiResponse(200, recipe, 'These are your recipes'));
 })
 
 const deleteRecipe = asyncHandler(async (req, res) => {
-    const recId = req.body;
+    const { recId } = req.body;
     if (!recId) {
         throw new ApiError(400, 'no recipe id found');
     }
@@ -348,11 +410,11 @@ const deleteRecipe = asyncHandler(async (req, res) => {
 })
 
 const getRecipe = asyncHandler(async (req, res) => {
-    const recId = req.body;
+    const { recId } = req.body;
     if (!recId) {
         throw new ApiError(404, "no recipe found");
     }
-    const recipe = await findById(recId);
+    const recipe = await Recipe.findById(recId);
     if (!recipe) {
         throw new ApiError(404, "no recipe found");
     }
@@ -375,7 +437,9 @@ export {
     allEggRecipe,
     eggAndNonVegRecipe,
     eggAndVegRecipe,
+    vegAndNonVegRecipe,
     getMyRecipe,
     deleteRecipe,
-    getRecipe
+    getRecipe,
+    updateVissibility
 }

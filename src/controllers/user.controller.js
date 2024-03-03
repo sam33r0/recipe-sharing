@@ -48,7 +48,7 @@ const register = asyncHandler(async (req, res) => {
     })
 
     const createdUser = await User.findById(user._id).select(
-        "-password -refreshToken"
+        "-password "
     )
 
     if (!createdUser) {
@@ -105,6 +105,8 @@ const loginUser = asyncHandler(async (req, res) => {
         httpOnly: true,
         secure: true
     }
+    user.accessToken=accessToken;
+    user.refreshToken=refreshToken;
     return res.status(200).cookie("accessToken", accessToken, options).cookie("refreshToken", refreshToken, options).json(
         new ApiResponse(200,
             {
@@ -172,7 +174,9 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
 })
 
 const getCurrentUser = asyncHandler(async (req, res) => {
+    if(req?.user)
     return res.status(200).json(new ApiResponse(200, req.user, "User fetched successfully"));
+    return res.status(404).json(new ApiResponse(404,{},"No user found"));
 })
 
 const updateAccountDetails = asyncHandler(async (req, res) => {
@@ -180,11 +184,18 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
     if (!fullName && !email) {
         throw new ApiError(400, " All fields are required");
     }
+    const existedUser = await User.findOne({
+        $or: [{ email }]
+    })
+    if(existedUser)
+    {
+        throw new ApiError(400, "email already exists");
+    }
     const user = await User.findByIdAndUpdate(req.user?._id, {
         $set: {
             fullName, email
         }
-    }, { new: true }).select("-password -refreshToken");
+    }, { new: true }).select("-password ");
     res.status(200).json(new ApiResponse(200, user, "Account details uploaded successfully"));
 
 })
@@ -205,7 +216,7 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
             avatar: avatar.url
         }
     }, { new: true }
-    ).select("-password -refreshToken");
+    ).select("-password ");
     await deleteFromCloudinary(oldAvatar);
     return res.status(200).json(new ApiResponse(200, user, "avatar updated successfull"));
 })
