@@ -7,21 +7,21 @@ import { deleteFromCloudinary, uploadOnCloudinary } from "../utils/cloudinary.js
 import { User } from "../models/user.model.js";
 
 const addRecipe = asyncHandler(async (req, res) => {
-    const { name, ingredient, content, cookingTime, visibility, category } = req?.body;
+    const { name, ingredient, content, cookingTime, visibility, category, image } = req?.body;
     const author = new mongoose.Types.ObjectId(req.user?._id);
     if (
         [name, content].some((field) => field?.trim() === "")
     ) {
         throw new ApiError(400, "incomplete data");
     }
-    const localImagePath = req.file?.path;
-    if (!localImagePath) {
-        throw new ApiError(400, "no image is uploaded");
-    }
-    const image = await uploadOnCloudinary(localImagePath);
-    if (!image) {
-        throw new ApiError(400, "unable to upload image");
-    }
+    // const localImagePath = req.file?.path;
+    // if (!localImagePath) {
+    //     throw new ApiError(400, "no image is uploaded");
+    // }
+    // const image = await uploadOnCloudinary(localImagePath);
+    // if (!image) {
+    //     throw new ApiError(400, "unable to upload image");
+    // }
     const recipe = await Recipe.create({
         name,
         ingredient,

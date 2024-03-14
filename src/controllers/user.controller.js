@@ -17,8 +17,8 @@ const register = asyncHandler(async (req, res) => {
     // check for user creation
     // return res
 
-    const avatarLocalPath = req.file?.path;
-    const { username, email, fullName, dob, password } = req.body;
+   // const avatarLocalPath = req.file?.path;
+    const { username, email, fullName, dob, password,avatar } = req.body;
     if (
         [fullName, email, username, password].some((field) => field?.trim() === "")
     ) {
@@ -32,10 +32,10 @@ const register = asyncHandler(async (req, res) => {
     if (existedUser)
         throw new ApiError(409, "User already exist");
 
-    if (!avatarLocalPath)
-        throw new ApiError(409, "no dp to upload");
+    // if (!avatarLocalPath)
+    //     throw new ApiError(409, "no dp to upload");
 
-    const avatar = await uploadOnCloudinary(avatarLocalPath);
+    //const avatar = await uploadOnCloudinary(avatarLocalPath);
     if (!avatar)
         throw new ApiError(400, "Avatar file is required");
     const user = await User.create({
@@ -201,11 +201,11 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
 })
 
 const updateUserAvatar = asyncHandler(async (req, res) => {
-    const avatarLocalPath = req.file?.path
-    if (!avatarLocalPath) {
-        throw new ApiError(400, "Avatar file is missing");
-    }
-    const avatar = await uploadOnCloudinary(avatarLocalPath);
+   // const avatarLocalPath = req.file?.path
+    // if (!avatarLocalPath) {
+    //     throw new ApiError(400, "Avatar file is missing");
+    // }
+    const avatar = req.body;
     if (!avatar.url) {
         throw new ApiError(400, "Cloudinary upload error");
     }
