@@ -2,8 +2,8 @@
     "version": 2,
     "builds":[
         {
-            "src":"*.js",
-            "use":"@vercel/node"
+            "src":"./src/app.js",
+            "use":"@vercel/node -r dotenv/config --experimental-json-modules"
         }
     ],
     "routes":[
