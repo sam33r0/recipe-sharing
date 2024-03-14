@@ -1,23 +1,25 @@
-import dotenv from "dotenv";
-import connectDB from "./db/index.js";
-import { app } from "./kp.js";
+import express from "express";
+import cors from "cors";
+import cookieParser from "cookie-parser";
 
-dotenv.config({
-    path: './.env'
-})
-connectDB()
-.then(()=>{
-    app.on("error",
-        (error)=>{
-            console.log("error",error);
-            throw error;
-        }
-    )
-    app.listen(process.env.PORT || 8000,()=>{
-        console.log(`server is running at ${process.env.PORT}`)
-    })
+import userRoutes from "./routes/user.routes.js"
+import  recipeRoutes  from "./routes/recipe.routes.js";
 
-})
-.catch((error)=>{
-    console.log("mongodb connection fail!!! ", error);
+const app= express();
+
+app.use(cors({
+    origin: true,
+    credentials: true,
+    
+}));
+
+app.use(express.json({ limit: "32kb" }))
+app.use(express.urlencoded({ extended: true, limit: "32kb" }))
+app.use(express.static("public"))
+app.use(cookieParser());
+app.get('/',(req,res)=>{
+    res.json({"message":"It is live"})
 });
+app.use("/reciapi/v1/users",userRoutes);
+app.use("/reciapi/v1/recipe", recipeRoutes)
+export { app };
